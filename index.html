@@ -786,6 +786,11 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="oolong-&#x1F375;">Oolong &#x1F375;</h1>
+<p><a href="https://travis-ci.org/pardom/oolong/" target="_blank"><img src="https://img.shields.io/travis/pardom/oolong/master.svg" alt="Build Status"></a>
+<a href="#download"><img src="https://img.shields.io/maven-central/v/com.michaelpardo/oolong.svg" alt="Maven Central"></a>
+<a href="#download"><img src="https://img.shields.io/nexus/s/https/oss.sonatype.org/com.michaelpardo/oolong.svg" alt="Sonatype Nexus (Snapshots)"></a>
+<a href="LICENSE.md"><img src="https://img.shields.io/github/license/pardom/oolong.svg" alt="License"></a>
+<a href="https://github.com/oolong-kt/oolong" target="_blank"><img src="https://img.shields.io/github/stars/oolong-kt/oolong.svg?style=social" alt="Github"></a></p>
 <p>Oolong is an Elm inspired Model-View-Update (MVU) implementation for Kotiln multiplatform. As the name implies, three core concepts comprise the foundation of this architecture:</p>
 <ul>
 <li><p><strong>Model</strong> - a type to represent the program state</p>
@@ -796,7 +801,51 @@
 </li>
 </ul>
 <p>By applying this simple pattern you can create composable, testable programs that can run on any platform. Oolong enables a common codebase for all platforms by using a Render function which is implemented by each frontend.</p>
-<p>Let&apos;s get started by learning the <a href="core-concepts.html">Core Concepts</a> of Oolong.</p>
+<h3 id="example">Example</h3>
+<p>The following is a simple counter example in which the count can be incremented or decremented.</p>
+<pre><code class="lang-kotlin"><span class="hljs-keyword">object</span> Counter {
+
+    data <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Model</span></span>(
+        <span class="hljs-variable"><span class="hljs-keyword">val</span> count</span>: <span class="hljs-keyword">Int</span> = <span class="hljs-number">0</span>
+    )
+
+    sealed <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Msg</span> </span>{
+        <span class="hljs-keyword">object</span> Increment : Msg()
+        <span class="hljs-keyword">object</span> Decrement : Msg()
+    }
+
+    data <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Props</span></span>(
+        <span class="hljs-variable"><span class="hljs-keyword">val</span> count</span>: <span class="hljs-keyword">Int</span>,
+        <span class="hljs-variable"><span class="hljs-keyword">val</span> onIncrement</span>: () -&gt; Msg,
+        <span class="hljs-variable"><span class="hljs-keyword">val</span> onDecrement</span>: () -&gt; Msg
+    )
+
+    <span class="hljs-variable"><span class="hljs-keyword">val</span> init</span>: Init<span class="hljs-type">&lt;Model, Msg&gt;</span> = { 
+        Model() to noEffect()
+    }
+
+    <span class="hljs-variable"><span class="hljs-keyword">val</span> update</span>: Update<span class="hljs-type">&lt;Model, Msg&gt;</span> = { msg, model -&gt;
+        <span class="hljs-keyword">when</span> (msg) {
+            Msg.Increment -&gt; model.copy(count = model.count + <span class="hljs-number">1</span>)
+            Msg.Decrement -&gt; model.copy(count = model.count - <span class="hljs-number">1</span>)
+        } to noEffect()
+    }
+
+    <span class="hljs-variable"><span class="hljs-keyword">val</span> view</span>: View<span class="hljs-type">&lt;Model, Props&gt;</span> = { model -&gt;
+        Props(
+            model.count,
+            { Msg.Increment },
+            { Msg.Decrement }
+        )
+    }
+
+}
+</code></pre>
+<h3 id="download">Download</h3>
+<pre><code class="lang-kotlin">dependencies {
+    implementation(<span class="hljs-string">&quot;org.oolong-kt:oolong:2.0.0-SNAPSHOT&quot;</span>)
+}
+</code></pre>
 
                                 
                                 </section>
@@ -836,7 +885,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Introduction","level":"1.1","depth":1,"next":{"title":"Core Concepts","level":"1.2","depth":1,"path":"core-concepts.md","ref":"core-concepts.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["expand-active-chapter","kotlin-playground@https://github.com/pardom/gitbook-plugin-kotlin-playground"],"pluginsConfig":{"expand-active-chapter":{},"kotlin-playground":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"README.md","mtime":"2019-03-18T18:53:37.141Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-03-18T18:53:57.873Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Introduction","level":"1.1","depth":1,"next":{"title":"Core Concepts","level":"1.2","depth":1,"path":"core-concepts.md","ref":"core-concepts.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["expand-active-chapter","kotlin-playground@https://github.com/pardom/gitbook-plugin-kotlin-playground"],"pluginsConfig":{"expand-active-chapter":{},"kotlin-playground":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"README.md","mtime":"2019-03-20T16:06:19.456Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-03-20T16:06:48.852Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

@@ -797,26 +797,26 @@
 </code></pre>
 <h2 id="update">Update</h2>
 <h4 id="messages">Messages</h4>
-<p>Before looking at the update function, let&apos;s talk about messages. Messages describe the way we want the application state to change. In the case of our counter app, we have two messages that can be dispatched and handled: <code>Increment</code> and <code>Decrement</code>. <code>Increment</code> adds <code>1</code> to the current value of <code>count</code> and <code>Decrement</code> subtracts <code>1</code> from <code>count</code>. We&apos;ll look at how messages are handled next. By convention, messages are defined as part of a <code>sealed</code> class. This allows us to use an exhaustive list of types when interpreting messages.</p>
+<p>Before looking at the update function, let&apos;s talk about messages. Messages describe the way we want the application state to change. In the case of our counter app, we have two messages that can be dispatched and handled: <code>Increment</code> and <code>Decrement</code>. <code>Increment</code> adds <code>1</code> to the current value of <code>count</code> and <code>Decrement</code> subtracts <code>1</code> from <code>count</code>. By convention, messages are defined as part of a <code>sealed</code> class. This allows us to use an exhaustive list of types when interpreting messages.</p>
 <pre><code class="lang-kotlin">sealed <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Msg</span> </span>{
     <span class="hljs-keyword">object</span> Increment : Msg()
     <span class="hljs-keyword">object</span> Decrement : Msg()
 }
 </code></pre>
 <h4 id="update-function">Update function</h4>
-<p>So far we have looked at the model and messages. The update function uses these two concepts to take a previous state and transform it to the next state. When a message is dispatched, update is called with the dispatched message and the current state as arguments. The function must determine what state to return given these arguments.</p>
-<p>So far we have mentioned two conventions: models are <code>data</code> classes, and messages are <code>sealed</code> classes. You can see in the function below how those modifiers come into play. The message is type is able to be determined in an exhaustive <code>when</code> block. The new state is created by mutating the old state with the <code>copy</code> function. You may notice that the return type is a <code>Pair</code> of <code>Model</code> and some type returned by <code>noEffect</code>. We&apos;ll discuss this in detail in a later chapter.</p>
+<p>The update function uses these two concepts to take a previous state and transform it to the next state. When a message is dispatched, the update function is called with the dispatched message and the current state as arguments. The function must determine what state to return given these arguments.</p>
+<p>So far we have mentioned two conventions: models are <code>data</code> classes, and messages are <code>sealed</code> classes. You can see in the function below how those modifiers are leveraged. The message type is able to be determined in an exhaustive manner using the <code>when</code> block. The new state is created by mutating the old state with the <code>copy</code> function.</p>
 <pre><code class="lang-kotlin"><span class="hljs-variable"><span class="hljs-keyword">val</span> update</span>: Update<span class="hljs-type">&lt;Model, Msg&gt;</span> = { msg, model -&gt;
     <span class="hljs-keyword">when</span> (msg) {
         Msg.Increment -&gt; model.copy(count = model.count + <span class="hljs-number">1</span>)
         Msg.Decrement -&gt; model.copy(count = model.count - <span class="hljs-number">1</span>)
-    } to noEffect()
+    }
 }
 </code></pre>
 <h2 id="view">View</h2>
-<p>The job of the view function is to transform the current state into something that can be rendered in a UI. This could be an HTML string, a tree of widgets, or in most practical cases it will be a deeply nested data structure. The term we&apos;ll use for this is view properties or <code>Props</code>.</p>
+<p>The job of the view function is to transform the current state into something that can be rendered in a UI. This could be an HTML string, a tree of widgets, or in multiplatform projects it will be a simple data structure. We call this output type view properties or <code>Props</code>.</p>
 <h4 id="view-properties">View properties</h4>
-<p>There are two types of data you may want to store in your view properties. First is information that you want rendered to the UI, and in this case we want to show the current count. The second category of data is message generators. Your rendering code will know how to display properties and dispatch messages created from generators. If you are only targetting one platform, then you may decide to return components specific to that platform, but since Oolong is a multiplatform library it is convention to use a simple data structure.</p>
+<p>There are two types of data you may want to store in your view properties. First is information that you want to be rendered to the UI, and in this case we want to show the current count. The second category of data is message generators. Your rendering code will know how to display properties and dispatch messages created from generators. If you are only targetting one platform, then you may decide to return components specific to that platform, but since Oolong is a multiplatform library it is convention to use a hierarchical data structure.</p>
 <pre><code class="lang-kotlin"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Props</span></span>(
     <span class="hljs-variable"><span class="hljs-keyword">val</span> count</span>: <span class="hljs-keyword">Int</span>,
     <span class="hljs-variable"><span class="hljs-keyword">val</span> onIncrement</span>: () -&gt; Msg,
@@ -824,7 +824,7 @@
 )
 </code></pre>
 <h4 id="view-function">View function</h4>
-<p>The view function, as mentioned above, takes the current state its argument and returns view properties. Here we populate the view properties with:</p>
+<p>The view function, as mentioned above, takes the current state its argument and returns view properties. In our counter example we populate the view properties with:</p>
 <ul>
 <li><code>count</code> - the current count.</li>
 <li><code>onIncrement</code> - a function which returns the <code>Increment</code> message.</li>
@@ -839,11 +839,11 @@
 }
 </code></pre>
 <h2 id="puting-it-all-together">Puting it all together</h2>
-<p>Now that we&apos;ve built the core components of our application, we need a few more things to complete the it.</p>
+<p>Now that we&apos;ve built the core components of our application we need a few more things to complete it, namely a way to create an initial application state and a way to render the view properties.</p>
 <h4 id="initialization-function">Initialization function</h4>
-<p>To get the runtime loop going, we first need to know what the initial state is. We do this by definiting an initialization function. This function is similar to the <code>update</code> function, however it takes no arguments. By convention, it is often desireable to define defaults in the model class and simply return a new instance from the init function.</p>
-<pre><code class="lang-kotlin"><span class="hljs-variable"><span class="hljs-keyword">val</span> init</span>: Init<span class="hljs-type">&lt;Model, Msg&gt;</span> = {
-    Model() to noEffect()
+<p>To get the runtime loop started, we first need to know what the initial state is. We do this by definiting an initialization function. This function is similar to the <code>update</code> function, however it takes no arguments. By convention, it is often desireable to define defaults in the model class and simply return a new instance from the init function.</p>
+<pre><code class="lang-kotlin"><span class="hljs-variable"><span class="hljs-keyword">val</span> init</span>: Init<span class="hljs-type">&lt;Model&gt;</span> = {
+    Model()
 }
 </code></pre>
 <h4 id="render-function">Render function</h4>
@@ -856,8 +856,8 @@
 }
 </code></pre>
 <h4 id="runtime">Runtime</h4>
-<p>Now that we have all the requirements of an Oolong runtime defined, we can start it by calling <code>Oolong.runtime</code>.</p>
-<pre><code class="lang-kotlin">Oolong.runtime(
+<p>The Oolong runtime composes these core functions into a user interaction loop, continually moving from one state to the next. It also handles things like side-effects (which we&apos;ll see in the next chapter) and resource disposal. You can start this loop by calling <code>Oolong.runtime</code>.</p>
+<pre><code class="lang-kotlin"><span class="hljs-variable"><span class="hljs-keyword">val</span> dispose</span> = Oolong.runtime(
     init,
     update,
     view,
@@ -908,7 +908,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Core Concepts","level":"1.2","depth":1,"next":{"title":"Effects","level":"1.3","depth":1,"path":"effects/README.md","ref":"effects/README.md","articles":[{"title":"Delay","level":"1.3.1","depth":2,"path":"effects/delay.md","ref":"effects/delay.md","articles":[]},{"title":"Random","level":"1.3.2","depth":2,"path":"effects/random.md","ref":"effects/random.md","articles":[]}]},"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["expand-active-chapter","kotlin-playground@https://github.com/pardom/gitbook-plugin-kotlin-playground"],"pluginsConfig":{"expand-active-chapter":{},"kotlin-playground":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"core-concepts.md","mtime":"2019-03-18T18:53:37.142Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-03-18T18:53:57.873Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Core Concepts","level":"1.2","depth":1,"next":{"title":"Effects","level":"1.3","depth":1,"path":"effects/README.md","ref":"effects/README.md","articles":[{"title":"Delay","level":"1.3.1","depth":2,"path":"effects/delay.md","ref":"effects/delay.md","articles":[]},{"title":"Random","level":"1.3.2","depth":2,"path":"effects/random.md","ref":"effects/random.md","articles":[]}]},"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":["expand-active-chapter","kotlin-playground@https://github.com/pardom/gitbook-plugin-kotlin-playground"],"pluginsConfig":{"expand-active-chapter":{},"kotlin-playground":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"core-concepts.md","mtime":"2019-03-20T16:06:19.457Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-03-20T16:06:48.852Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
